@@ -1,13 +1,17 @@
 ```python
 from bookshelf.models import Book
-books = Book.objects.all()
-books
-books.delete()
+
+# Retrieve a book
+book = Book.objects.get(title="1984")
+
+# Delete the book
+book.delete()
+
+# Confirm deletion
 Book.objects.all()
 ```
 
 ```
-<QuerySet [<Book: 1984 by George Orwell (1949)>]>
 (1, {'bookshelf.Book': 1})
 <QuerySet []>
 ```
