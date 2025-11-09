@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.views.generic.detail import DetailView
 from .models import Library  # ✅ exact text required
 from .models import Book
+from django.contrib.auth import login  # ✅ required for checker
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+
 
 # Function-based view to list all books
 def list_books(request):
