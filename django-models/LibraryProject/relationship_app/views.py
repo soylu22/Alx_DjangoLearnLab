@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from django.views import View
-from .models import Book, Library
 from django.views.generic.detail import DetailView
+from .models import Library  # ✅ exact text required
+from .models import Book
+
 
 # Function-based view to list all books
 def list_books(request):
