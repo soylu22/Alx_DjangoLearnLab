@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import DetailView
-from .models import Book, Library   # CHECKER REQUIRES THIS IMPORT
+from .models import Book, Author, Library, Librarian  # <- must include Library
+
 
 # FUNCTION-BASED VIEW
 def list_books(request):
@@ -11,8 +12,8 @@ def list_books(request):
         {'books': books}
     )
 
-# CLASS-BASED VIEW
 class LibraryDetailView(DetailView):
-    model = Library
-    template_name = 'relationship_app/library_detail.html'   # CHECKER REQUIRES THIS EXACT STRING
+    model = Library               # <- uses Library directly
+    template_name = 'relationship_app/library_detail.html'
     context_object_name = 'library'
+
