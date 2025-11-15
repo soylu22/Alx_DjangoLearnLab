@@ -4,8 +4,8 @@ from .models import Book, Library
 
 # FUNCTION-BASED VIEW
 def list_books(request):
-    books = Book.objects.all()  # Get all books
-    return render(request, 'list_books.html', {'books': books})  # Send to template
+    books = Book.objects.all()
+    return render(request, 'relationship_app/list_books.html', {'books': books})
 
 
 # CLASS-BASED VIEW
