@@ -22,6 +22,7 @@ print(f"\nBooks in library '{library_name}':")
 for book in library.books.all():
     print(f" - {book.title} by {book.author.name}")
 
+
 # Retrieve the librarian for a library (checker-compliant)
 librarian = Librarian.objects.get(library=library)
 print(f"\nLibrarian for library '{library_name}': {librarian.name}")
