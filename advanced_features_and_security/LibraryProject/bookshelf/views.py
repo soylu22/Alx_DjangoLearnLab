@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden, HttpResponseBadRequest
 from django.db.models import Q
 from .models import Book, Library
+from .forms import ExampleForm
 
 
 # Secure book list view with proper query parameterization
@@ -37,87 +38,46 @@ def book_list(request):
 @permission_required('bookshelf.can_create_book', raise_exception=True)
 def book_create(request):
     """
-    Create a new book with input validation.
-    Uses CSRF protection via template token.
+    Create a new book using ExampleForm for secure input validation.
     """
     if request.method == 'POST':
-        # Input validation and sanitization
-        title = request.POST.get('title', '').strip()
-        author = request.POST.get('author', '').strip()
-        description = request.POST.get('description', '').strip()
+        form = ExampleForm(request.POST)
+        if form.is_valid():
+            # Secure creation using Django ORM with validated data
+            book = form.save(commit=False)
+            book.created_by = request.user
+            book.save()
+            messages.success(request, f'Book "{book.title}" created successfully!')
+            return redirect('book_list')
+    else:
+        form = ExampleForm()
 
-        # Validate required fields
-        if not title or not author:
-            messages.error(request, 'Title and author are required fields.')
-            return render(request, 'bookshelf/form_example.html')
-
-        # Input length validation to prevent buffer overflow attacks
-        if len(title) > 200:
-            messages.error(request, 'Title is too long (maximum 200 characters).')
-            return render(request, 'bookshelf/form_example.html')
-
-        if len(author) > 100:
-            messages.error(request, 'Author name is too long (maximum 100 characters).')
-            return render(request, 'bookshelf/form_example.html')
-
-        # Create book using Django ORM (safe from SQL injection)
-        book = Book.objects.create(
-            title=title,
-            author=author,
-            description=description,
-            created_by=request.user
-        )
-        messages.success(request, f'Book "{book.title}" created successfully!')
-        return redirect('book_list')
-
-    return render(request, 'bookshelf/form_example.html')
+    return render(request, 'bookshelf/form_example.html', {'form': form})
 
 
 @login_required
 @permission_required('bookshelf.can_edit_book', raise_exception=True)
 def book_edit(request, book_id):
     """
-    Edit a book with proper authorization checks.
-    Uses get_object_or_404 for safe object retrieval.
+    Edit a book using ExampleForm for secure input validation.
     """
-    # Safe object retrieval - prevents exposure of non-existent objects
     book = get_object_or_404(Book, id=book_id)
 
-    # Authorization check - users can only edit their own books
+    # Authorization check
     if book.created_by != request.user and not request.user.is_superuser:
         return HttpResponseForbidden("You can only edit books you created.")
 
     if request.method == 'POST':
-        # Input validation and sanitization
-        title = request.POST.get('title', '').strip()
-        author = request.POST.get('author', '').strip()
-        description = request.POST.get('description', '').strip()
+        form = ExampleForm(request.POST, instance=book)
+        if form.is_valid():
+            # Secure update using Django ORM with validated data
+            form.save()
+            messages.success(request, f'Book "{book.title}" updated successfully!')
+            return redirect('book_list')
+    else:
+        form = ExampleForm(instance=book)
 
-        # Validate required fields
-        if not title or not author:
-            messages.error(request, 'Title and author are required fields.')
-            return render(request, 'bookshelf/form_example.html', {'book': book})
-
-        # Input length validation
-        if len(title) > 200:
-            messages.error(request, 'Title is too long (maximum 200 characters).')
-            return render(request, 'bookshelf/form_example.html', {'book': book})
-
-        if len(author) > 100:
-            messages.error(request, 'Author name is too long (maximum 100 characters).')
-            return render(request, 'bookshelf/form_example.html', {'book': book})
-
-        # Safe update using Django ORM
-        book.title = title
-        book.author = author
-        book.description = description
-        book.save()
-
-        messages.success(request, f'Book "{book.title}" updated successfully!')
-        return redirect('book_list')
-
-    return render(request, 'bookshelf/form_example.html', {'book': book})
-
+    return render(request, 'bookshelf/form_example.html', {'form': form, 'book': book})
 
 @login_required
 @permission_required('bookshelf.can_delete_book', raise_exception=True)

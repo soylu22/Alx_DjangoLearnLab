@@ -6,7 +6,7 @@
 <body>
     <h1>Book List</h1>
 
-    <!-- Secure search form with CSRF protection -->
+    <!-- Secure search form -->
     <form method="get" action="{% url 'book_list' %}">
         <input type="text" name="search" value="{{ search_query }}" placeholder="Search books...">
         <button type="submit">Search</button>
@@ -29,7 +29,6 @@
                 {% endif %}
                 <small>Created by: {{ book.created_by.email }}</small>
 
-                <!-- Permission-based action buttons -->
                 {% if perms.bookshelf.can_edit_book and book.created_by == user or user.is_superuser %}
                     <a href="{% url 'book_edit' book.id %}">Edit</a>
                 {% endif %}
