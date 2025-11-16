@@ -1,13 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
-        """
-        Create and return a regular user with an email and password.
-        """
         if not email:
             raise ValueError(_('The Email field must be set'))
         email = self.normalize_email(email)
@@ -17,9 +15,6 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        """
-        Create and return a superuser with an email and password.
-        """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -33,11 +28,8 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    # Remove the default username field and make email the primary identifier
     username = None
     email = models.EmailField(_('email address'), unique=True)
-
-    # Additional custom fields
     date_of_birth = models.DateField(_('date of birth'), null=True, blank=True)
     profile_photo = models.ImageField(
         _('profile photo'),
@@ -46,7 +38,6 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
-    # Set the email field as the username field
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
@@ -58,3 +49,50 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = _('user')
         verbose_name_plural = _('users')
+
+
+# Book Model with Custom Permissions
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    published_date = models.DateField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='books_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Custom permissions for Book model
+        permissions = [
+            ("can_view_book", "Can view book"),
+            ("can_create_book", "Can create book"),
+            ("can_edit_book", "Can edit book"),
+            ("can_delete_book", "Can delete book"),
+        ]
+
+    def __str__(self):
+        return self.title
+
+
+# Library Model (optional, for more complex relationships)
+class Library(models.Model):
+    name = models.CharField(max_length=100)
+    books = models.ManyToManyField(Book, related_name='libraries', blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='libraries_created'
+    )
+
+    class Meta:
+        permissions = [
+            ("can_view_library", "Can view library"),
+            ("can_manage_library", "Can manage library"),
+        ]
+
+    def __str__(self):
+        return self.name
