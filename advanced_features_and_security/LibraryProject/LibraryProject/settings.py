@@ -116,6 +116,7 @@ AUTH_USER_MODEL = 'bookshelf.CustomUser'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
 # SECURITY SETTINGS CONFIGURATION
 # These settings enhance application security by enabling various protections
 
@@ -134,6 +135,10 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 # SECURITY: Allow preloading of HSTS policy in browser preload lists
 SECURE_HSTS_PRELOAD = True
+
+# SECURITY: Configure proxy SSL header for detecting HTTPS behind proxy
+# This tells Django to look for the X-Forwarded-Proto header to detect HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Step 2: Enforce Secure Cookies
 
@@ -164,6 +169,9 @@ SECURE_REFERRER_POLICY = 'same-origin'
 # For production deployment with HTTPS, you need to configure your web server
 # to handle SSL/TLS certificates. Below are examples for common web servers:
 #
+# IMPORTANT: When using a reverse proxy (like Nginx or Apache), ensure they set
+# the X-Forwarded-Proto header so Django can properly detect HTTPS connections.
+#
 # NGINX Configuration Example:
 #
 # server {
@@ -180,7 +188,7 @@ SECURE_REFERRER_POLICY = 'same-origin'
 #         proxy_set_header Host $host;
 #         proxy_set_header X-Real-IP $remote_addr;
 #         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_set_header X-Forwarded-Proto $scheme;  # IMPORTANT: This tells Django it's HTTPS
 #     }
 # }
 #
@@ -201,56 +209,7 @@ SECURE_REFERRER_POLICY = 'same-origin'
 #     ProxyPreserveHost On
 #     ProxyPass / http://127.0.0.1:8000/
 #     ProxyPassReverse / http://127.0.0.1:8000/
-# </VirtualHost>
-#
-# <VirtualHost *:80>
-#     ServerName yourdomain.com
-#     Redirect permanent / https://yourdomain.com/
-# </VirtualHost>
-
-
-# DEPLOYMENT CONFIGURATION FOR HTTPS
-#
-# For production deployment with HTTPS, you need to configure your web server
-# to handle SSL/TLS certificates. Below are examples for common web servers:
-#
-# NGINX Configuration Example:
-#
-# server {
-#     listen 443 ssl http2;
-#     server_name yourdomain.com;
-#
-#     ssl_certificate /path/to/your/certificate.crt;
-#     ssl_certificate_key /path/to/your/private.key;
-#     ssl_protocols TLSv1.2 TLSv1.3;
-#     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-#
-#     location / {
-#         proxy_pass http://127.0.0.1:8000;
-#         proxy_set_header Host $host;
-#         proxy_set_header X-Real-IP $remote_addr;
-#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header X-Forwarded-Proto $scheme;
-#     }
-# }
-#
-# server {
-#     listen 80;
-#     server_name yourdomain.com;
-#     return 301 https://$server_name$request_uri;
-# }
-#
-# Apache Configuration Example:
-#
-# <VirtualHost *:443>
-#     ServerName yourdomain.com
-#     SSLEngine on
-#     SSLCertificateFile /path/to/your/certificate.crt
-#     SSLCertificateKeyFile /path/to/your/private.key
-#
-#     ProxyPreserveHost On
-#     ProxyPass / http://127.0.0.1:8000/
-#     ProxyPassReverse / http://127.0.0.1:8000/
+#     RequestHeader set X-Forwarded-Proto "https"  # IMPORTANT: This tells Django it's HTTPS
 # </VirtualHost>
 #
 # <VirtualHost *:80>
