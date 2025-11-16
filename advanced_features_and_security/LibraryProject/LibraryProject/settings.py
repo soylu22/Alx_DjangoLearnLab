@@ -117,29 +117,143 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # SECURITY SETTINGS CONFIGURATION
+# These settings enhance application security by enabling various protections
 
-# Prevent XSS attacks by enabling browser's XSS filtering
-SECURE_BROWSER_XSS_FILTER = True
+# HTTPS CONFIGURATION - Step 1: Configure Django for HTTPS Support
 
-# Prevent clickjacking by denying framing of the site
-X_FRAME_OPTIONS = 'DENY'
+# Redirect all non-HTTPS requests to HTTPS
+# SECURITY: Ensures all traffic uses encrypted HTTPS connections
+SECURE_SSL_REDIRECT = True
 
-# Prevent MIME type sniffing
-SECURE_CONTENT_TYPE_NOSNIFF = True
+# HTTP Strict Transport Security (HSTS) settings
+# SECURITY: Instructs browsers to only access the site via HTTPS for the specified time
+SECURE_HSTS_SECONDS = 31536000  # 1 year in seconds
 
-# Ensure CSRF cookies are only sent over HTTPS
-CSRF_COOKIE_SECURE = True
+# SECURITY: Include all subdomains in the HSTS policy
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
-# Ensure session cookies are only sent over HTTPS
+# SECURITY: Allow preloading of HSTS policy in browser preload lists
+SECURE_HSTS_PRELOAD = True
+
+# Step 2: Enforce Secure Cookies
+
+# SECURITY: Ensure session cookies are only transmitted over HTTPS
 SESSION_COOKIE_SECURE = True
 
-# Content Security Policy (CSP) headers
-# This reduces risk of XSS attacks by specifying allowed content sources
+# SECURITY: Ensure CSRF cookies are only transmitted over HTTPS
+CSRF_COOKIE_SECURE = True
+
+# Step 3: Implement Secure Headers
+
+# SECURITY: Prevent XSS attacks by enabling browser's XSS filtering
+SECURE_BROWSER_XSS_FILTER = True
+
+# SECURITY: Prevent clickjacking by denying framing of the site
+X_FRAME_OPTIONS = 'DENY'
+
+# SECURITY: Prevent MIME type sniffing which could lead to XSS
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Additional security headers
+# SECURITY: Set Referrer Policy to enhance privacy and security
 SECURE_REFERRER_POLICY = 'same-origin'
 
-# Additional security headers (manual CSP implementation)
-# Note: For full CSP, consider using django-csp package
+
+# DEPLOYMENT CONFIGURATION FOR HTTPS
+#
+# For production deployment with HTTPS, you need to configure your web server
+# to handle SSL/TLS certificates. Below are examples for common web servers:
+#
+# NGINX Configuration Example:
+#
+# server {
+#     listen 443 ssl http2;
+#     server_name yourdomain.com;
+#
+#     ssl_certificate /path/to/your/certificate.crt;
+#     ssl_certificate_key /path/to/your/private.key;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:8000;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#     }
+# }
+#
+# server {
+#     listen 80;
+#     server_name yourdomain.com;
+#     return 301 https://$server_name$request_uri;
+# }
+#
+# Apache Configuration Example:
+#
+# <VirtualHost *:443>
+#     ServerName yourdomain.com
+#     SSLEngine on
+#     SSLCertificateFile /path/to/your/certificate.crt
+#     SSLCertificateKeyFile /path/to/your/private.key
+#
+#     ProxyPreserveHost On
+#     ProxyPass / http://127.0.0.1:8000/
+#     ProxyPassReverse / http://127.0.0.1:8000/
+# </VirtualHost>
+#
+# <VirtualHost *:80>
+#     ServerName yourdomain.com
+#     Redirect permanent / https://yourdomain.com/
+# </VirtualHost>
 
 
-LOGIN_REDIRECT_URL = 'list_books'
-LOGOUT_REDIRECT_URL = 'login'
+# DEPLOYMENT CONFIGURATION FOR HTTPS
+#
+# For production deployment with HTTPS, you need to configure your web server
+# to handle SSL/TLS certificates. Below are examples for common web servers:
+#
+# NGINX Configuration Example:
+#
+# server {
+#     listen 443 ssl http2;
+#     server_name yourdomain.com;
+#
+#     ssl_certificate /path/to/your/certificate.crt;
+#     ssl_certificate_key /path/to/your/private.key;
+#     ssl_protocols TLSv1.2 TLSv1.3;
+#     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:8000;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#     }
+# }
+#
+# server {
+#     listen 80;
+#     server_name yourdomain.com;
+#     return 301 https://$server_name$request_uri;
+# }
+#
+# Apache Configuration Example:
+#
+# <VirtualHost *:443>
+#     ServerName yourdomain.com
+#     SSLEngine on
+#     SSLCertificateFile /path/to/your/certificate.crt
+#     SSLCertificateKeyFile /path/to/your/private.key
+#
+#     ProxyPreserveHost On
+#     ProxyPass / http://127.0.0.1:8000/
+#     ProxyPassReverse / http://127.0.0.1:8000/
+# </VirtualHost>
+#
+# <VirtualHost *:80>
+#     ServerName yourdomain.com
+#     Redirect permanent / https://yourdomain.com/
+# </VirtualHost>
