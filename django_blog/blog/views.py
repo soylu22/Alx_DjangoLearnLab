@@ -6,6 +6,11 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django import forms
 from .forms import CustomeUserCreationForm
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse_lazy
+from .models import Post
+from .forms import PostForm
 
 # Create your views here.
 
@@ -52,3 +57,55 @@ def profile_view(request):
         request.user.save()
         messages.success(request, "Profile updated successfully!")
     return render(request, 'blog/profile.html')
+
+
+# postlist view -shows list of objects
+
+class PostListView(ListView):
+    model =Post
+    template_name = 'blog/post_list.html'
+    context_object_name = 'posts'
+    ordering = ['-published_date']
+
+# post detail view shows single obj
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'blog/post_detail.html'
+
+# postcreate view creates new posts
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    template_name = 'blog/post_create.html'
+    form_class = PostForm
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+# postupdate view used to edit obj
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model =Post
+    form_class = PostForm
+    template_name = 'blog/post_form.html'
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    def test_func(self):
+        post = self.get_object()
+        return super().test_func()
+    
+# post delete view
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    template_name = 'blog/post_confirm_delete.html'
+    success_url = reverse_lazy('post-list')
+
+    def test_func(self):
+        post = self.get_object()
+        return super().test_func()
