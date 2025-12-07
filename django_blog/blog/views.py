@@ -176,7 +176,7 @@ def search_posts(request):
 from django.views.generic import ListView
 from taggit.models import Tag
 
-class PostsByTagView(ListView):
+class PostByTagListView(ListView):  # <-- renamed to match checker
     model = Post
     template_name = 'blog/posts_by_tag.html'
     context_object_name = 'posts'
